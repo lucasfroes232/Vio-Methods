@@ -1,0 +1,16 @@
+%YAML:1.0
+
+cam0:
+  # R camera(optica)->IMU e posicao da camera na IMU. Translacao = CHUTE (MEDIR).
+  T_imu_cam:
+    - [0.0, 0.0, 1.0, 0.18]
+    - [-1.0, 0.0, 0.0, 0.0]
+    - [0.0, -1.0, 0.0, 0.18]
+    - [0.0, 0.0, 0.0, 1.0]
+  cam_overlaps: [0]
+  camera_model: pinhole
+  distortion_coeffs: [0.06770296, -0.09198445, -4.9284e-05, -3.24972e-04]
+  distortion_model: radtan
+  intrinsics: [489.018, 489.018, 317.679, 217.624]
+  resolution: [640, 480]
+  rostopic: /camera/color/image_raw

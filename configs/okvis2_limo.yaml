@@ -1,0 +1,78 @@
+%YAML:1.0
+# OKVIS2 mono + IMU para o Limo (Dabai 640x480 + IMU do chassi).
+# PROVISORIO: intrinsecas de fabrica, extrinseca CHUTADA (translacao a medir) e ruidos conservadores.
+# Troque pelos valores do Kalibr. A imagem chega em escala de cinza (okvis_relay.py converte).
+cameras:
+     - {T_SC:   # camera na IMU (mesma do OpenVINS: eixo optico = frente do robo)
+        [ 0.0,  0.0, 1.0, 0.18,
+         -1.0,  0.0, 0.0, 0.0,
+          0.0, -1.0, 0.0, 0.18,
+          0.0,  0.0, 0.0, 1.0 ],
+        image_dimension: [640, 480],
+        distortion_coefficients: [0.06770296, -0.09198445, -4.9284e-05, -3.24972e-04],
+        distortion_type: radialtangential,
+        focal_length: [489.018, 489.018],
+        principal_point: [317.679, 217.624],
+        camera_type: gray,
+        slam_use: okvis}
+
+camera_parameters:
+    timestamp_tolerance: 0.005
+    sync_cameras: [0]
+    image_delay: 0.0
+    online_calibration:
+        do_extrinsics: false
+        do_extrinsics_final_ba: false
+        sigma_r: 0.01
+        sigma_alpha: 0.1
+        sigma_r_final_ba: 0.03
+        sigma_alpha_final_ba: 0.3
+
+imu_parameters:
+    use: true
+    a_max: 160.0
+    g_max: 10.0
+    sigma_g_c: 1.0e-2      # ruido do giroscopio (igual ao do OpenVINS/VINS)
+    sigma_a_c: 1.0e-1
+    sigma_bg: 0.03
+    sigma_ba: 0.1
+    sigma_gw_c: 5.0e-5
+    sigma_aw_c: 2.0e-3
+    g: 9.81007
+    g0: [0.0, 0.0, 0.0]
+    a0: [0.0, 0.0, 0.0]
+    T_BS: [1.0, 0.0, 0.0, 0.0,
+           0.0, 1.0, 0.0, 0.0,
+           0.0, 0.0, 1.0, 0.0,
+           0.0, 0.0, 0.0, 1.0]
+
+frontend_parameters:
+    detection_threshold: 30.0
+    absolute_threshold: 5.0
+    matching_threshold: 60.0
+    octaves: 0
+    max_num_keypoints: 400
+    keyframe_overlap: 0.55
+    use_cnn: false
+    parallelise_detection: true
+    num_matching_threads: 2
+
+estimator_parameters:
+    num_keyframes: 5
+    num_loop_closure_frames: 5
+    num_imu_frames: 3
+    do_loop_closures: false   # VIO puro (comparacao justa e menos carga)
+    do_final_ba: false
+    enforce_realtime: true
+    realtime_min_iterations: 3
+    realtime_max_iterations: 10
+    realtime_time_limit: 0.04
+    realtime_num_threads: 2
+    full_graph_iterations: 15
+    full_graph_num_threads: 1
+    p_dbow: 0.4
+    drift_percentage_heuristic: 1.35
+
+output_parameters:
+    display_matches: false
+    display_overhead: false

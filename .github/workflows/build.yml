@@ -1,0 +1,42 @@
+name: build-limo-vio
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["Dockerfile.*", "docker/**", "configs/**", "scripts/**", "tools/**", ".github/workflows/**"]
+
+# Runner ARM64 nativo (sem QEMU). Gratuito em repositorios PUBLICOS; confirme o rotulo no GitHub.
+# Cada metodo e um job independente: se um falhar, o outro continua publicado.
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: jazzy
+            dockerfile: Dockerfile.all
+          - name: openvins
+            dockerfile: Dockerfile.openvins
+          - name: okvis2
+            dockerfile: Dockerfile.okvis2
+          - name: vinsfusion
+            dockerfile: Dockerfile.vinsfusion
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build e push (${{ matrix.name }})
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          platforms: linux/arm64
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/limo-vio:${{ matrix.name }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}

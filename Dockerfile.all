@@ -1,0 +1,43 @@
+# syntax=docker/dockerfile:1
+# Imagem UNICA ROS 2 JAZZY (ARM64): OpenVINS + OKVIS2 + VINS-Fusion + drivers do Limo + ferramentas de experimento.
+# Cada componente e compilado isolado; veja o resultado com:  docker run --rm IMAGE status.sh
+FROM ros:jazzy-ros-base
+ARG OV_REF=master
+ARG OKVIS_REF=main
+ARG VINSF_REPO=https://github.com/the-ninth-moon/VINS-Fusion-ROS2-humble-arm.git
+ARG VINSF_REF=master
+ARG CERES_REF=2.1.0
+ARG LIMO_REF=humble
+ENV DEBIAN_FRONTEND=noninteractive ROS_DISTRO=jazzy
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      build-essential cmake git nano tmux v4l-utils \
+      python3-colcon-common-extensions python3-psutil python3-numpy python3-opencv \
+      libeigen3-dev libceres-dev libboost-all-dev libopencv-dev libpcl-dev \
+      libsuitesparse-dev libgoogle-glog-dev libgflags-dev libatlas-base-dev \
+      ros-jazzy-cv-bridge ros-jazzy-image-transport ros-jazzy-message-filters \
+      ros-jazzy-pcl-conversions ros-jazzy-pcl-msgs ros-jazzy-eigen3-cmake-module \
+      ros-jazzy-ament-cmake-python ros-jazzy-visualization-msgs \
+      ros-jazzy-tf2-ros ros-jazzy-tf2-geometry-msgs \
+      ros-jazzy-rosbag2-cpp ros-jazzy-rosbag2-storage-default-plugins ros-jazzy-ros2bag \
+      ros-jazzy-launch-testing-ros ros-jazzy-rmw-cyclonedds-cpp \
+      ros-jazzy-v4l2-camera \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY docker/build_*.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/build_*.sh
+RUN build_limo.sh
+RUN build_openvins.sh
+RUN build_okvis2.sh
+RUN build_vinsfusion.sh
+# Falha o build so se NENHUM metodo VIO compilou; o CI mostra o status de cada um acima.
+RUN for f in /opt/status/*; do case $f in *.log|*.commit) ;; *) echo "$(basename $f): $(cat $f)";; esac; done \
+ && cat /opt/status/openvins /opt/status/okvis2 /opt/status/vinsfusion | grep -q OK
+
+COPY docker/entrypoint.sh /entrypoint.sh
+COPY scripts/ /opt/limo_vio/scripts/
+COPY tools/   /opt/limo_vio/tools/
+COPY configs/ /opt/limo_vio/configs/
+RUN chmod +x /entrypoint.sh /opt/limo_vio/scripts/*.sh /opt/limo_vio/tools/*.py
+ENV PATH=/opt/limo_vio/scripts:/opt/limo_vio/tools:${PATH}
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["bash"]

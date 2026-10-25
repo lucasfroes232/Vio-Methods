@@ -1,0 +1,17 @@
+%YAML:1.0
+---
+# PROVISORIO: intrinsecas de fabrica da Dabai (640x480). Troque pelos valores do Kalibr.
+model_type: PINHOLE
+camera_name: dabai
+image_width: 640
+image_height: 480
+distortion_parameters:
+   k1: 0.06770296
+   k2: -0.09198445
+   p1: -4.9284e-05
+   p2: -3.24972e-04
+projection_parameters:
+   fx: 489.018
+   fy: 489.018
+   cx: 317.679
+   cy: 217.624

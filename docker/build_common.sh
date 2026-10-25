@@ -2,7 +2,7 @@
 # Funcoes comuns. Cada metodo/driver e compilado isolado: se um falhar, os outros continuam e o
 # resultado fica em /opt/status/<nome> (OK ou FAIL) com o log em /opt/status/<nome>.log.
 mkdir -p /opt/status
-src_ros() { set +u; source /opt/ros/${ROS_DISTRO}/setup.bash; for w in /opt/*_ws; do [ -f $w/install/setup.bash ] && source $w/install/setup.bash; done; set -u 2>/dev/null; set +u; }
+src_ros() { set +u; source /opt/ros/${ROS_DISTRO}/setup.bash; }
 # uso: ws_build <nome> <workspace> <pacotes> [args do cmake...]
 ws_build() {
   local name=$1 ws=$2 pk=$3; shift 3

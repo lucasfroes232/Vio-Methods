@@ -9,7 +9,8 @@ if git clone --depth 1 --branch ${CERES_REF:-2.1.0} https://github.com/ceres-sol
    && cmake --build /tmp/ceres/build -j3 >> /opt/status/$n.log 2>&1 && cmake --install /tmp/ceres/build >> /opt/status/$n.log 2>&1; then
   CERES_ARGS=(-DCeres_DIR=/opt/ceres-2.1/lib/cmake/Ceres); echo "Ceres 2.1.0 compilado" >> /opt/status/$n.log
 else
-  echo "AVISO: Ceres 2.1.0 falhou; usando o Ceres do apt" | tee -a /opt/status/$n.log
+  echo "AVISO: Ceres 2.1.0 falhou; usando o Ceres do apt. Ultimas linhas do log:" | tee -a /opt/status/$n.log
+  tail -40 /opt/status/$n.log
 fi
 rm -rf /tmp/ceres
 mkdir -p /opt/vins_ws/src && cd /opt/vins_ws/src
@@ -19,5 +20,6 @@ git log -1 --format='VINSF commit: %H' | tee /opt/status/$n.commit
 # CPU apenas (OpenCV do apt sem CUDA): desliga o macro de GPU
 F=vins/src/featureTracker/feature_tracker.h
 sed -i 's|^#define GPU_MODE 1|// #define GPU_MODE 1|' $F && grep -q '^// #define GPU_MODE 1' $F || { mark_fail $n "macro GPU_MODE nao encontrada"; exit 0; }
+python3 /usr/local/bin/fix_includes.py /opt/vins_ws/src | tee -a /opt/status/$n.log
 ws_build $n /opt/vins_ws "camera_models vins" "${CERES_ARGS[@]}"
 exit 0

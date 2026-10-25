@@ -17,6 +17,10 @@ jobs:
         include:
           - name: jazzy
             dockerfile: Dockerfile.all
+            args: ROS_DISTRO=jazzy
+          - name: humble
+            dockerfile: Dockerfile.all
+            args: ROS_DISTRO=humble
           - name: openvins
             dockerfile: Dockerfile.openvins
           - name: okvis2
@@ -36,6 +40,7 @@ jobs:
           context: .
           file: ${{ matrix.dockerfile }}
           platforms: linux/arm64
+          build-args: ${{ matrix.args }}
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/limo-vio:${{ matrix.name }}
           cache-from: type=gha,scope=${{ matrix.name }}
